@@ -1,17 +1,27 @@
 import axios from 'axios';
 
-const SIGN_UP_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.EXPO_PUBLIC_AUTH_API_KEY}`;
-
-export async function createUser(email, password) {
+async function authenticate(mode, email, password) {
   try {
-    const response = await axios.post(SIGN_UP_URL, {
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:${mode}?key=${process.env.EXPO_PUBLIC_AUTH_API_KEY}`;
+    const response = await axios.post(url, {
       email,
       password,
       returnSecureToken: true,
     });
-    return response;
+    console.log('login success', !!response.data.idToken);
+    return response.data.idToken;
   } catch (error) {
     console.log(error);
     return null;
   }
+}
+
+export async function createUser(email, password) {
+  const token = await authenticate('signUp', email, password);
+  return token;
+}
+
+export async function login(email, password) {
+  const token = await authenticate('signInWithPassword', email, password);
+  return token;
 }
